@@ -20,10 +20,11 @@ Everything committed here is world-readable, permanently. Never add:
 - customer, candidate, or employee data
 - content copied out of a private repo
 
-Cite private material by path or name only — for example the consumer guide at
-`supabase_blindstairs/supabase/functions/mcp-server/MCP_CONSUMER_GUIDE.md` — never paste its
-contents. Generic, capability-level guidance is fine; anything that identifies our
-infrastructure or our people is not.
+Never paste the contents of internal material here — and do not name internal repositories,
+directory paths, service names or document titles either. A path is itself infrastructure
+detail. Generic, capability-level guidance is fine; anything that identifies our systems or our
+people is not. When internal guidance is the reason for a change, say so in the pull request,
+which is where that context belongs.
 
 ## Layout rule
 
@@ -40,9 +41,6 @@ a change here that contradicts the in-MCP guide is a bug, not an improvement.
 
 ## Cross-repo canon
 
-Company-wide rules are not restated here. They live in `BlindStairs/plane-ops`:
-
-- `../plane-ops/docs/agent-basics.md` — cross-repo agent basics
-- `../plane-ops/docs/where-rules-live.md` — which document owns which rule
-
-If that checkout is not beside this one: https://github.com/BlindStairs/plane-ops
+Blindstairs' company-wide agent rules are not restated here, and they are not public. If you work
+at Blindstairs you already know where they live; if you do not, they are not needed to use this
+skill.

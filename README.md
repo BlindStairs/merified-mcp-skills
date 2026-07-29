@@ -31,6 +31,7 @@ Copy the skill into your project's skills directory:
 
 ```sh
 git clone https://github.com/BlindStairs/merified-mcp-skills
+mkdir -p <your-project>/.claude/skills
 cp -R merified-mcp-skills/.agents/skills/merified-mcp <your-project>/.claude/skills/
 ```
 
