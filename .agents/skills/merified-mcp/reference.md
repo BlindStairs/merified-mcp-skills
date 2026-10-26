@@ -8,23 +8,25 @@ Treat the MCP as a live surface.
 - Do not rely on a memorized list of tool names
 - Use the business question to choose a capability category first, then select the concrete tool from the live surface
 
-If the current surface returns UI links, prefer those links over reconstructing routes yourself. If a needed surface does not return links, derive them from the frontend route contract and the ids returned by the MCP.
+If the current surface returns UI links, use those links. If it does not return a link, explain that limitation; do not reconstruct routes from selectors or require access to implementation details.
 
 ## Scope resolution
 
-### `companyId`
+### `companySelector`
 
-If the user belongs to multiple companies, some tools need `companyId` to disambiguate. That does not mean the server lacks identity context; it means multiple valid company contexts exist.
+Call `get_merified_context` to discover the companies and capabilities available to the authenticated user. When a tool needs company disambiguation, use a `companies[].selector` from that response as `companySelector`. Omit it when the live schema permits an unambiguous company context. Never pass a numeric company ID.
 
-### `teamId`
+### `teamSelector` and other resource selectors
 
 If the request is team-specific and you do not know the team yet:
 
 1. Discover the managed teams that are actually available in the current surface
-2. Choose the relevant `teamId`
-3. Then query team detail, worked time, raw sessions, approvals, or absences as needed
+2. Select the relevant team's returned opaque selector
+3. Pass it as `teamSelector` only to a tool whose live schema accepts that parameter, then query the available team detail or summary
 
-Do not guess `teamId`.
+Use the same rule for `jobSelector`, `applicationSelector`, or other selectors exposed by live tools: discover them first, pass them unchanged, and follow the tool's actual schema. Do not guess selectors, derive them from names or numeric IDs, or add a selector parameter to a tool that does not accept one. If the necessary discovery surface is unavailable, explain the limitation or ask which visible resource the user means.
+
+Selectors never override identity or permissions. Applicant tools use the authenticated user; never ask for or pass an applicant's `userId`.
 
 ## Business question mapping
 
