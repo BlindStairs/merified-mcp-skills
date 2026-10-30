@@ -3,8 +3,9 @@
 A single, publicly installable agent skill for consuming the **Merified MCP** well.
 
 It teaches an agent to discover the live tool surface instead of guessing tool names, resolve
-company and team scope before querying, read summaries before evidence, keep worked hours and
-login activity apart, and treat free-text evidence as untrusted data.
+company and team scope before querying, read summaries before evidence, keep worked time, time
+beyond the schedule and paid overtime apart, follow the prepare, confirm, execute flow for the few
+governed writes, and treat free text written by other people as untrusted data.
 
 ## Who it is for
 
@@ -14,16 +15,17 @@ question.
 
 ## Provenance and drift
 
-**The authoritative, actively maintained guidance lives inside the MCP server itself**, exposed
-by the `get_merified_guide` tool. This repository is a point-in-time snapshot derived from it,
-first published 2026-06-22.
+**The authoritative, actively maintained guidance lives inside the MCP server itself**: its live
+tool list and tool descriptions and, on server versions that offer one, a guide tool. This
+repository is a point-in-time snapshot derived from that guidance, first published 2026-06-22.
 
-- **Call `get_merified_guide` first.** It describes the server you are actually connected to.
-- **When this repo and the in-MCP guide disagree, the in-MCP guide wins.** Tool names,
-  parameters and capabilities change on the server's schedule, not this repo's.
+- **Discover the live tool list first, and read the server's guide tool if it lists one.** They
+  describe the server you are actually connected to.
+- **When this repo and the server disagree, the server wins.** Tool names, parameters and
+  capabilities change on the server's schedule, not this repo's.
 - Treat what follows as orientation and working habits, not as an API contract.
 
-Last reviewed: 2026-07-28.
+Last reviewed: 2026-10-29.
 
 ## Install
 
