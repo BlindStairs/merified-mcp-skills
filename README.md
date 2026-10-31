@@ -15,17 +15,19 @@ question.
 
 ## Provenance and drift
 
-**The authoritative, actively maintained guidance lives inside the MCP server itself**: its live
-tool list and tool descriptions and, on server versions that offer one, a guide tool. This
-repository is a point-in-time snapshot derived from that guidance, first published 2026-06-22.
+**The skill is generated** from Merified's own knowledge base: the same product words, facts and
+tool list that the MCP server and the in-app help use. Nobody edits it by hand; a change to the
+product's wording or to the published tools produces a new version here, through a reviewed
+pull request.
 
-- **Discover the live tool list first, and read the server's guide tool if it lists one.** They
-  describe the server you are actually connected to.
-- **When this repo and the server disagree, the server wins.** Tool names, parameters and
-  capabilities change on the server's schedule, not this repo's.
+- The frontmatter's `metadata` says when it was generated (`generated`) and what it contains
+  (`fingerprint`, which changes only when the content does).
+- **When this repo and the server disagree, the server wins.** Discover the live tool list
+  first: tool names, parameters and capabilities change on the server's schedule, not this
+  repo's.
 - Treat what follows as orientation and working habits, not as an API contract.
 
-Last reviewed: 2026-10-29.
+See [CHANGELOG.md](CHANGELOG.md) for what changed between versions.
 
 ## Install
 
@@ -45,8 +47,8 @@ ln -s /path/to/merified-mcp-skills/.agents/skills/merified-mcp \
 ```
 
 Cursor reads `<your-project>/.cursor/skills/` instead; adjust the target for other clients. The
-skill sets `disable-model-invocation: true`, so it loads when you ask for it rather than firing
-on its own.
+skill activates on its own when someone asks an agent about Merified (their workday, time off,
+approvals or hiring); its description decides when.
 
 ## Layout
 

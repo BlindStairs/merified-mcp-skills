@@ -6,8 +6,8 @@ Copilot, Codex…). Start here.
 ## What this repo is
 
 One publicly installable skill that teaches an agent to consume the Merified MCP well. Nothing
-else. See [README.md](README.md) for install and provenance: the authoritative guidance lives
-inside the MCP server (`get_merified_guide`), and this repo is a snapshot of it.
+else. See [README.md](README.md) for install and provenance: the skill is generated from
+Merified's knowledge base, and the live MCP server stays authoritative.
 
 ## This repository is PUBLIC
 
@@ -36,8 +36,10 @@ the symlinks must be mode `120000`.
 ## Changes go via PR
 
 Branch, commit, open a pull request; no direct pushes to the default branch. Sign the PR body
-with `**Author:** <name>` — the git identity is shared. The skill's guidance is derived content:
-a change here that contradicts the in-MCP guide is a bug, not an improvement.
+with `**Author:** <name>` — the git identity is shared. The skill is generated content: do not
+edit `SKILL.md` or `reference.md` by hand. A wrong sentence is fixed where it is generated, and the
+next generated version lands here through a pull request reviewed by a person (never
+auto-merged). Record each version in [CHANGELOG.md](CHANGELOG.md).
 
 ## Cross-repo canon
 
