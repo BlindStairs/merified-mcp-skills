@@ -123,6 +123,7 @@ Rules:
 - Prepare first, show the user the exact returned effect, and obtain their explicit confirmation. A client's confirmation dialog is not the user's confirmation of the effect
 - Execute only with the opaque plan token returned by the prepare step, unchanged. Plans expire quickly and fail closed if anything relevant changes; prepare again instead of retrying blindly
 - If a plan says it is not executable, tell the user to finish it in the Merified app
+- An approval decision over someone else's request is never executed through the MCP: the plan comes back with `executable: false` and `appLink.url`, the request in Merified's «Mis tareas». Show the effect, give the user that link to decide there, and never say it is approved or declined
 - Time-off requests take only dates and a type, and approval decisions take no comment. Sick or medical leave and anything health-related are requested in the Merified app. A correction needs a short, health-free reason
 - The MCP cannot publish jobs, change candidates, run interviews, hire, send messages, manage users, billing or payroll, or do bulk edits
 
