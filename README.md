@@ -25,7 +25,7 @@ repository is a point-in-time snapshot derived from that guidance, first publish
   capabilities change on the server's schedule, not this repo's.
 - Treat what follows as orientation and working habits, not as an API contract.
 
-Last reviewed: 2026-10-29.
+Last reviewed: 2026-11-03.
 
 ## Install
 
