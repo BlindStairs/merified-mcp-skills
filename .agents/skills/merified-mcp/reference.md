@@ -7,6 +7,7 @@ Treat the MCP as a live surface.
 - Discover the capabilities that are actually exposed in the current session; the tool list depends on the user's role, the company's settings and the server version
 - Do not rely on a memorized list of tool names
 - Use the business question to choose a capability category first, then select the concrete tool from the live surface
+- Reads are grouped into three tools by domain: `get_my_info`, `get_team_info` and `get_recruiting_info`. Each requires a `read` input naming the read to run, plus that read's own inputs. The `read` values a user may call depend on their role, so take them from the live schema. A read name is never a tool name: call the grouped tool and pass the name as `read`
 
 If the current surface returns UI links, use those links. If it does not return a link, explain that limitation; do not reconstruct routes from selectors or require access to implementation details.
 
@@ -33,19 +34,28 @@ Selectors never override identity or permissions. Tools act as the authenticated
 ### Employee (self-service)
 
 Question: "How many hours did I work / what were my sessions?"
-- Use the worked-time data surface in self scope for a bounded date range, and add up the returned sessions
+- Use `get_my_info` with the worked-time read in self scope for a bounded date range, and add up the returned sessions
 
 Question: "How much time did I work beyond my schedule?"
 - Compare the clocked total with the expected time the same surface returns; this is time beyond the schedule («tiempo extra»), not paid overtime
 
 Question: "What is my time-off balance / what have I requested?"
-- Use the own time-off context surface
+- Use `get_my_info` with the time-off context read
 
 Question: "When is the best time to take N days off?"
-- Use the time-off recommendation surface: up to a few deterministic, read-only options. A recommendation is never a request
+- Use `get_my_info` with the time-off recommendation read: up to a few deterministic, read-only options. A recommendation is never a request
 
 Question: "Which tags can I choose when I start working?"
-- Use the work-tag surface
+- Use `get_my_info` with the work-tag read
+
+Question: "What do I have pending?"
+- Use `get_my_info` with the tasks read: counts by kind, without titles. Decisions and the tasks themselves are finished in the Merified app
+
+Question: "How is my day going / what is my hours bank?"
+- Use `get_my_info` with the workday read for the user's own day today and hours bank. Let the server's figures stand
+
+Question: "Where am I in my onboarding?"
+- Use `get_my_info` with the onboarding read
 
 ### Manager operations
 
@@ -53,27 +63,27 @@ Question: "What teams do I have?"
 - Read the teams in the context
 
 Question: "How many people are available in this team and window?"
-- Use the team availability summary: counts only, no names and no individual absences
+- Use `get_team_info` with the availability read: counts only, no names and no individual absences
 
 Question: "What approvals are pending?"
-- Use the pending-approvals summary for counts; use the pending list for actionable items inside the manager's live scope
+- Use `get_team_info` with the pending-approvals summary read for counts; use the pending-list read for actionable items inside the manager's live scope
 
 Question: "How many hours did the team / this person work?"
-- Use the worked-time data surface in team or company scope for a bounded range, with pagination; expected time covers only the people on the current page
+- Use `get_my_info` with the worked-time read in team or company scope for a bounded range, with pagination; expected time covers only the people on the current page
 
 ### Recruiting
 
 Question: "Which jobs need intervention?"
-- Use the attention surface
+- Use `get_recruiting_info` with the attention read
 
 Question: "What does the hiring funnel look like?"
-- Use the pipeline surface: aggregate counts and stage timing, for the company or one job
+- Use `get_recruiting_info` with the pipeline read: aggregate counts and stage timing, for the company or one job
 
 Question: "How do these shortlisted candidates compare?"
-- Use the shortlist comparison for two to five applications of the same job
+- Use `get_recruiting_info` with the shortlist comparison read for two to five applications of the same job
 
 Question: "Tell me about this candidate"
-- Use the minimized candidate brief
+- Use `get_recruiting_info` with the candidate brief read: a minimized summary
 
 Broader recruiting surfaces (full job or candidate tables, requirement- or evidence-level drill-down) may not be available. Say so instead of approximating them.
 
@@ -113,18 +123,20 @@ Do not jump to low-level evidence when a summary can answer the question clearly
 
 ## Writes
 
-Only a few outcomes are writable, and only where the live list offers them and the company allows them:
+Only a few outcomes are writable, each through the tool of its action, and only where the live list offers it and the company allows it:
 
-- Starting or ending the user's own work session at server time. The server owns the timestamp and resolves the active session: no backdating, no other person. Use a fresh unique idempotency key per intent and reuse it only to retry the same request
-- Preparing a time-off request, a time-correction request, an approval decision or an inactive job draft
+- `clock_in`, `clock_out` and `clock_pause_end` (back from a break) record the user's own entry, exit or return at server time, in one call. The server owns the timestamp: no backdating, no other person. Never state a time you did not read from Merified
+- `time_off_request`, `time_off_update` and `time_off_cancel` act on the user's own time off; `time_correction_request` asks for a fix to a clocking
+- `absence_decide` and `correction_decide` hand a manager's decision on a request to the Merified app
+- `job_create_inactive` and `job_update_inactive` manage inactive job drafts
 
 Rules:
 
-- Prepare first, show the user the exact returned effect, and obtain their explicit confirmation. A client's confirmation dialog is not the user's confirmation of the effect
-- Execute only with the opaque plan token returned by the prepare step, unchanged. Plans expire quickly and fail closed if anything relevant changes; prepare again instead of retrying blindly
-- If a plan says it is not executable, tell the user to finish it in the Merified app
-- An approval decision over someone else's request is never executed through the MCP: the plan comes back with `executable: false` and `appLink.url`, the request in Merified's «Mis tareas». Show the effect, give the user that link to decide there, and never say it is approved or declined
-- Time-off requests take only dates and a type, and approval decisions take no comment. Sick or medical leave and anything health-related are requested in the Merified app. A correction needs a short, health-free reason
+- Every write other than clocking takes two steps and the user is the one who confirms. The first call changes nothing and returns the effect. When the client can ask the user inside the call, it shows them the exact effect and, once they accept, the same call returns the result: you receive no confirmation token and make no second call. Otherwise the first call returns a preview and a `confirmToken`: show the preview, and only after the user agrees call the same tool again with only `{ confirmToken }`. Never confirm on the user's behalf, and never present a prepared change as done
+- A token is valid for that tool and user only and expires quickly; the change fails closed if anything relevant changed. Start again with a new first call instead of retrying blindly
+- If a result says `executable: false`, nothing was changed: give the user its `appLink` and say it is finished in the Merified app
+- An approval decision over someone else's request is never executed through the MCP: the answer carries `executable: false` and an `appLink.url`, the request in Merified's «Mis tareas». Show the facts, give the user that link to decide there, and never say it is approved or declined. Do not choose or recommend a decision
+- Time-off requests take only dates and a type, and decisions take no comment. Sick or medical leave and anything health-related are requested in the Merified app. A correction needs a short, health-free reason
 - The MCP cannot publish jobs, change candidates, run interviews, hire, send messages, manage users, billing or payroll, or do bulk edits
 
 ## Safety rules
@@ -143,5 +155,5 @@ When beginning a Merified MCP task:
 1. List the live tools, and read the guide tool if the server offers one
 2. Resolve company and team scope with the context
 3. Map the user question to a business capability category
-4. Choose the smallest sufficient tool from the live surface
+4. Choose the grouped read tool of that domain and the smallest sufficient `read` from its live schema
 5. Explain clearly when the live surface lacks a needed capability
