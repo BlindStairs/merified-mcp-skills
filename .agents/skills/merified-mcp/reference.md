@@ -7,7 +7,7 @@ Treat the MCP as a live surface.
 - Discover the capabilities that are actually exposed in the current session; the tool list depends on the user's role, the company's settings and the server version
 - Do not rely on a memorized list of tool names
 - Use the business question to choose a capability category first, then select the concrete tool from the live surface
-- Reads are grouped into three tools by domain: `get_my_info`, `get_team_info` and `get_recruiting_info`. Each requires a `read` input naming the read to run, plus that read's own inputs. The `read` values a user may call depend on their role, so take them from the live schema. A read name is never a tool name: call the grouped tool and pass the name as `read`
+- Reads are grouped into three tools by domain: `get_my_info`, `get_team_info` and `get_recruiting_info`. Each requires a `read` input naming the read to run, plus that read's own inputs. The `read` values a user may call depend on their role, so take them from the live schema. For new calls, use the grouped tool and pass the read's name as `read`; do not rely on older per-read tool names, which may still answer for compatible clients but are not listed
 
 If the current surface returns UI links, use those links. If it does not return a link, explain that limitation; do not reconstruct routes from selectors or require access to implementation details.
 
@@ -125,17 +125,17 @@ Do not jump to low-level evidence when a summary can answer the question clearly
 
 Only a few outcomes are writable, each through the tool of its action, and only where the live list offers it and the company allows it:
 
-- `clock_in`, `clock_out` and `clock_pause_end` (back from a break) record the user's own entry, exit or return at server time, in one call. The server owns the timestamp: no backdating, no other person. Never state a time you did not read from Merified
+- `clock_in`, `clock_out` and `clock_pause_end` (back from a break) record the user's own entry, exit or return at server time, in one call, and they write on that first call. Get the user's approval for that specific action BEFORE calling, as the live tool description says; starting a break happens in the Merified app. The server owns the timestamp: no backdating, no other person. Never state a time you did not read from Merified
 - `time_off_request`, `time_off_update` and `time_off_cancel` act on the user's own time off; `time_correction_request` asks for a fix to a clocking
 - `absence_decide` and `correction_decide` hand a manager's decision on a request to the Merified app
 - `job_create_inactive` and `job_update_inactive` manage inactive job drafts
 
 Rules:
 
-- Every write other than clocking takes two steps and the user is the one who confirms. The first call changes nothing and returns the effect. When the client can ask the user inside the call, it shows them the exact effect and, once they accept, the same call returns the result: you receive no confirmation token and make no second call. Otherwise the first call returns a preview and a `confirmToken`: show the preview, and only after the user agrees call the same tool again with only `{ confirmToken }`. Never confirm on the user's behalf, and never present a prepared change as done
+- Every write other than clocking takes two steps and the user is the one who confirms. The first call changes nothing and returns the effect. Act on what the server returns, not on what you assume about the client. If the client asks the user inside the call, it shows them the exact effect and, once they accept, the same call returns the result: no token, no second call. If the result is an executable preview with a `confirmToken`, show the preview, and only after the user agrees call the same tool again with only `{ confirmToken }`. If it is `executable: false`, there is neither a form nor a token (see below). Never confirm on the user's behalf, and never present a prepared change as done
 - A token is valid for that tool and user only and expires quickly; the change fails closed if anything relevant changed. Start again with a new first call instead of retrying blindly
-- If a result says `executable: false`, nothing was changed: give the user its `appLink` and say it is finished in the Merified app
-- An approval decision over someone else's request is never executed through the MCP: the answer carries `executable: false` and an `appLink.url`, the request in Merified's «Mis tareas». Show the facts, give the user that link to decide there, and never say it is approved or declined. Do not choose or recommend a decision
+- If a result says `executable: false`, nothing was changed: say it is finished in the Merified app. Share a link only when `appLink` returns a URL; otherwise point to the screen the result names, and never invent a link
+- An approval decision over someone else's request is never executed through the MCP: the answer carries `executable: false` and an `appLink.url`, the request in Merified's «Mis tareas». Show the facts, give the user the returned link when there is one (otherwise point to «Mis tareas»), never invent one, and never say it is approved or declined. Do not choose or recommend a decision
 - Time-off requests take only dates and a type, and decisions take no comment. Sick or medical leave and anything health-related are requested in the Merified app. A correction needs a short, health-free reason
 - The MCP cannot publish jobs, change candidates, run interviews, hire, send messages, manage users, billing or payroll, or do bulk edits
 

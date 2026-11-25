@@ -25,7 +25,7 @@ When explicitly asked to use Merified MCP:
 
 Merified MCP is organized around outcomes, in three domains:
 
-- Self-service: the user's own worked time, time-off balance and requests, time-off recommendations, pending tasks (counts by kind), today's workday and hours bank, onboarding progress, and clocking in, taking a break and clocking out
+- Self-service: the user's own worked time, time-off balance and requests, time-off recommendations, pending tasks (counts by kind), today's workday and hours bank, onboarding progress, and clocking in, clocking out and coming back from a break (starting a break happens in the Merified app)
 - Manager operations: team availability, pending approvals, and worked-time data for managed teams, always inside the manager's live scope
 - Recruiting: jobs that need attention, hiring-funnel counts, shortlist comparison and a minimized candidate brief
 
