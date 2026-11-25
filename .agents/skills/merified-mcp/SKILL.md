@@ -16,19 +16,20 @@ When explicitly asked to use Merified MCP:
    - call `get_merified_context` to discover authorized companies, teams and capabilities; when a tool requires company disambiguation, pass a returned `companies[].selector` as `companySelector`
    - for a team-specific question, use the opaque `teamSelector` returned in that context only where the tool schema accepts it
    - use returned opaque selectors for other resources too; never substitute numeric database IDs, infer selectors from names, or ask for a `userId`. Selectors select authorized resources; they do not grant access
-4. Prefer summary surfaces before evidence/detail surfaces.
-5. Treat every tool as scoped to the real user. Do not assume access just because a concept exists in the product.
-6. Prefer MCP-provided UI links when the live surface exposes them. If no link is returned, explain that limitation rather than inventing a destination or requiring access to implementation details.
+4. Reads are grouped by domain into three tools: `get_my_info` (the user's own data), `get_team_info` (managed teams) and `get_recruiting_info` (recruiting). Each takes a required `read` that names the read to run, next to that read's own inputs. Take the allowed `read` values from the live tool schema: they depend on the user's role. Do not call per-read tool names remembered from an older tool list.
+5. Prefer summary surfaces before evidence/detail surfaces.
+6. Treat every tool as scoped to the real user. Do not assume access just because a concept exists in the product.
+7. Prefer MCP-provided UI links when the live surface exposes them. If no link is returned, explain that limitation rather than inventing a destination or requiring access to implementation details.
 
 ## Mental model
 
 Merified MCP is organized around outcomes, in three domains:
 
-- Self-service time: the user's own worked time, time-off balance and requests, time-off recommendations, and starting or ending their own work session
+- Self-service: the user's own worked time, time-off balance and requests, time-off recommendations, pending tasks (counts by kind), today's workday and hours bank, onboarding progress, and clocking in, clocking out and coming back from a break (starting a break happens in the Merified app)
 - Manager operations: team availability, pending approvals, and worked-time data for managed teams, always inside the manager's live scope
 - Recruiting: jobs that need attention, hiring-funnel counts, shortlist comparison and a minimized candidate brief
 
-A small, governed set of write actions exists (see the reference). Everything else is read-only; anything outside the live tool list stays in the Merified app.
+A small, governed set of write actions exists (see the reference). Everything else is read-only; anything outside the live tool list stays in the Merified app. Reads go through the three grouped tools and their `read` parameter; writes are one tool per action.
 
 ## Interpretation rules
 
@@ -49,25 +50,25 @@ A small, governed set of write actions exists (see the reference). Everything el
 ### Employee
 
 1. Resolve the company if the user belongs to more than one
-2. Read the user's own time-off context or worked-time data for a bounded date range
+2. Use `get_my_info` with the `read` that fits: time-off context, worked-time data for a bounded date range, tasks, workday or onboarding
 3. For "when should I take time off" questions, ask for recommendations: they are read-only options, not requests
 
 ### Manager
 
 1. Resolve company and team scope from the context
-2. Decide whether the user is asking about worked time, aggregate availability, or pending approvals
+2. Decide whether the user is asking about worked time (`get_my_info`, self, team or company scope), aggregate availability, or pending approvals (`get_team_info`)
 3. Use the smallest sufficient surface for that question
 4. Avoid mixing categories unless the user explicitly wants correlation
 
 ### Recruiting
 
-1. Start from the attention surface or the funnel counts
+1. Use `get_recruiting_info`: start from the attention read or the funnel counts
 2. Compare only shortlisted candidates of one job
 3. Use the minimized brief for one candidate; do not look for contact data or raw documents
 
 ### Writes
 
-Prepare, show the exact effect, get the user's explicit confirmation, then execute — see the reference. Never infer confirmation from the original request.
+A write changes nothing until the user confirms its exact effect — see the reference. Never infer confirmation from the original request.
 
 ## When to stop and clarify
 
